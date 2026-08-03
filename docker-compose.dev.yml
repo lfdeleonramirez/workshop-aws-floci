@@ -1,0 +1,61 @@
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - workshop
+
+  backend:
+    build: ./backend
+    expose:
+      - "3000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - backend-data:/app/data
+    environment:
+      NODE_ENV: development
+      FLOCI_BASE_PORT: 4566
+      FLOCI_HOST: floci
+      PORT: 3000
+      MAX_SESSIONS: 50
+      SESSION_DURATION_HOURS: 4
+    depends_on:
+      - floci
+    networks:
+      - workshop
+
+  floci:
+    image: floci/floci:latest
+    ports:
+      - "4566:4566"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      FLOCI_STORAGE_MODE: hybrid
+      FLOCI_DEFAULT_REGION: us-east-1
+    networks:
+      - workshop
+
+  floci-ui:
+    image: floci/floci-ui:latest
+    ports:
+      - "4500:4500"
+    environment:
+      FLOCI_ENDPOINT: http://floci:4566
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_REGION: us-east-1
+    depends_on:
+      - floci
+    networks:
+      - workshop
+
+networks:
+  workshop:
+    driver: bridge
+
+volumes:
+  backend-data:

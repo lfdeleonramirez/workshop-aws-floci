@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+:root {
+  --color-aws-orange: #ff9900;
+  --color-aws-dark: #232f3e;
+  --color-aws-navy: #1a2332;
+}
+
+body {
+  background-color: var(--color-aws-navy);
+  color: white;
+  font-family: 'Inter', system-ui, sans-serif;
+}

@@ -1,0 +1,26 @@
+{
+  "name": "floci-workshop-backend",
+  "version": "1.0.0",
+  "description": "Backend for AWS interactive workshop with Floci",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ec2": "^3.650.0",
+    "@aws-sdk/client-iam": "^3.650.0",
+    "@aws-sdk/client-lambda": "^3.650.0",
+    "@aws-sdk/client-s3": "^3.650.0",
+    "better-sqlite3": "^11.3.0",
+    "cors": "^2.8.5",
+    "dockerode": "^4.0.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.0",
+    "jsonwebtoken": "^9.0.2",
+    "socket.io": "^4.8.0",
+    "uuid": "^10.0.0"
+  }
+}

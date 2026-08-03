@@ -1,0 +1,37 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno (secretos)
+.env
+.env.local
+.env.production
+
+# Base de datos
+data/
+*.db
+*.sqlite
+
+# Build outputs
+frontend/dist/
+backend/data/
+
+# Docker volumes
+docker/data/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# Keys y certificados
+*.pem
+*.key
+*.crt
+
+# Logs
+*.log
+npm-debug.log*

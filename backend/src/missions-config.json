@@ -1,0 +1,302 @@
+{
+  "missions": [
+    {
+      "id": 1,
+      "title": "Tu identidad en la nube",
+      "service": "IAM",
+      "icon": "🔐",
+      "concepts": ["IAM", "Usuarios", "Políticas", "Least Privilege"],
+      "analogy": "IAM es como el guardia de seguridad que decide quién entra y qué puede hacer en un edificio.",
+      "description": "Crea un usuario y asígnale permisos. ¿Le darás acceso total o solo lo necesario?",
+      "steps": [
+        {
+          "action": "createUser",
+          "title": "Crea un usuario IAM",
+          "fields": [
+            { "name": "userName", "label": "Nombre del usuario", "type": "text", "placeholder": "mi-usuario", "pattern": "[a-zA-Z0-9_-]+" }
+          ]
+        },
+        {
+          "action": "attachPolicy",
+          "title": "Asigna una política de permisos",
+          "scenario": "El usuario es un desarrollador que solo necesita leer archivos de S3 para su aplicación. No debería poder crear ni eliminar recursos, solo consultar datos.",
+          "hint": "Recuerda: el principio de least privilege dice que solo debes dar los permisos mínimos necesarios.",
+          "options": [
+            { "arn": "arn:aws:iam::aws:policy/AdministratorAccess", "name": "AdministratorAccess", "description": "Acceso total a todos los servicios y recursos de AWS" },
+            { "arn": "arn:aws:iam::aws:policy/PowerUserAccess", "name": "PowerUserAccess", "description": "Acceso a todos los servicios excepto gestión de usuarios" },
+            { "arn": "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess", "name": "AmazonS3ReadOnlyAccess", "description": "Permite listar buckets y leer objetos en S3" },
+            { "arn": "arn:aws:iam::aws:policy/AmazonEC2FullAccess", "name": "AmazonEC2FullAccess", "description": "Crear, modificar y eliminar instancias EC2 y recursos relacionados" }
+          ],
+          "correctOption": "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+        }
+      ],
+      "scoring": {
+        "leastPrivilege": 150,
+        "excessivePermissions": 50
+      },
+      "validation": {
+        "excessivePolicies": ["AdministratorAccess", "PowerUserAccess", "AmazonEC2FullAccess"]
+      }
+    },
+    {
+      "id": 2,
+      "title": "Tu primer almacén",
+      "service": "S3",
+      "icon": "📦",
+      "concepts": ["Bucket", "Objetos", "Permisos", "Versionado"],
+      "analogy": "Un bucket S3 es como una carpeta en Google Drive, pero diseñada para que las aplicaciones guarden archivos.",
+      "description": "Crea un bucket, sube un archivo y decide si el mundo puede verlo.",
+      "steps": [
+        {
+          "action": "createBucket",
+          "title": "Crea un bucket S3",
+          "fields": [
+            { "name": "bucketName", "label": "Nombre del bucket (único global)", "type": "text", "placeholder": "mi-primer-bucket-2026", "pattern": "[a-z0-9-]+" }
+          ],
+          "scenario": "Este bucket guardará reportes internos de tu empresa. Solo tu equipo debería poder verlos. Piensa si realmente necesitas que sean públicos.",
+          "accessOptions": [
+            { "value": true, "label": "🔒 Privado (solo yo)" },
+            { "value": false, "label": "🌍 Público (todos)" }
+          ],
+          "correctAccess": true
+        },
+        {
+          "action": "uploadFile",
+          "title": "Sube un archivo",
+          "fields": [
+            { "name": "fileName", "label": "Nombre del archivo", "type": "text", "default": "hola-mundo.txt" }
+          ]
+        },
+        {
+          "action": "enableVersioning",
+          "title": "¿Habilitar versionado?",
+          "description": "El versionado guarda un historial de cada cambio. Si alguien sobreescribe tu archivo, puedes recuperar la versión anterior.",
+          "options": [
+            { "value": true, "label": "Sí, habilitar" },
+            { "value": false, "label": "No, sin versionado" }
+          ],
+          "correctOption": true
+        }
+      ],
+      "scoring": {
+        "base": 100,
+        "privateBonus": 25,
+        "versioningBonus": 25
+      }
+    },
+    {
+      "id": 3,
+      "title": "Lanza tu servidor",
+      "service": "EC2",
+      "icon": "🖥️",
+      "concepts": ["Instancia", "Tipo", "AMI", "Key Pair", "Security Group"],
+      "analogy": "Lanzar una instancia EC2 es como rentar un departamento en la nube. Tú decides el tamaño y quién tiene la llave.",
+      "description": "Configura y lanza un servidor virtual. Elige bien quién puede acceder.",
+      "steps": [
+        {
+          "action": "createSecurityGroup",
+          "title": "Crea un Security Group (firewall)",
+          "description": "Antes de lanzar tu servidor, necesitas definir qué tráfico puede entrar."
+        },
+        {
+          "action": "addIngressRule",
+          "title": "¿Qué puertos abrir?",
+          "scenario": "Tu servidor va a correr una página web y necesitas conectarte por SSH para administrarlo. No necesita ningún otro servicio expuesto.",
+          "hint": "Cada puerto abierto es una puerta de entrada potencial para un atacante. Solo abre lo necesario.",
+          "portOptions": [
+            { "port": 22, "name": "SSH", "description": "Acceso remoto al servidor" },
+            { "port": 80, "name": "HTTP", "description": "Tráfico web sin encriptar" },
+            { "port": 443, "name": "HTTPS", "description": "Tráfico web encriptado" },
+            { "port": 0, "name": "Todos (0-65535)", "description": "Abre todos los puertos del servidor" }
+          ],
+          "correctPorts": [22, 80],
+          "insecurePort": 0
+        },
+        {
+          "action": "launchInstance",
+          "title": "Lanza tu instancia EC2",
+          "instanceTypes": [
+            { "type": "t2.micro", "cpu": "1 vCPU", "ram": "1 GB", "label": "Micro (gratis)" },
+            { "type": "t2.small", "cpu": "1 vCPU", "ram": "2 GB", "label": "Small" },
+            { "type": "t2.medium", "cpu": "2 vCPU", "ram": "4 GB", "label": "Medium" }
+          ]
+        }
+      ],
+      "scoring": {
+        "secureConfig": 150,
+        "openAllPorts": 50
+      },
+      "validation": {
+        "openAllCheck": {
+          "cidr": "0.0.0.0/0",
+          "fromPort": 0,
+          "toPort": 65535
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Código sin servidor",
+      "service": "Lambda",
+      "icon": "⚡",
+      "concepts": ["Función", "Trigger", "Runtime", "Ejecución efímera"],
+      "analogy": "Lambda es como un empleado que solo viene cuando lo llamas y cobra por el minuto que trabajó.",
+      "description": "Crea una función que se ejecuta sin necesidad de un servidor permanente.",
+      "steps": [
+        {
+          "action": "createFunction",
+          "title": "Configura tu función Lambda",
+          "fields": [
+            { "name": "functionName", "label": "Nombre de la función", "type": "text", "placeholder": "mi-funcion", "pattern": "[a-zA-Z0-9_-]+" }
+          ],
+          "runtimes": [
+            { "value": "nodejs18.x", "label": "Node.js 18", "icon": "🟢" },
+            { "value": "nodejs20.x", "label": "Node.js 20", "icon": "🟢" },
+            { "value": "python3.12", "label": "Python 3.12", "icon": "🐍" },
+            { "value": "java17", "label": "Java 17", "icon": "☕" }
+          ],
+          "roles": [
+            { "value": "arn:aws:iam::000000000000:role/admin-role", "name": "AdminRole", "description": "Acceso total a todos los servicios de AWS" },
+            { "value": "arn:aws:iam::000000000000:role/lambda-full-role", "name": "LambdaFullAccessRole", "description": "Acceso total a Lambda, S3, DynamoDB y CloudWatch" },
+            { "value": "arn:aws:iam::000000000000:role/lambda-basic-role", "name": "LambdaBasicExecutionRole", "description": "Solo permisos para escribir logs en CloudWatch" }
+          ],
+          "correctRole": "arn:aws:iam::000000000000:role/lambda-basic-role",
+          "scenario": "Tu función solo necesita escribir logs para monitoreo. No accede a otros servicios."
+        },
+        {
+          "action": "invokeFunction",
+          "title": "Ejecuta tu función",
+          "description": "Tu función está lista. ¡Invócala para ver qué responde!"
+        }
+      ],
+      "scoring": {
+        "functionCreatedAndInvoked": 150,
+        "functionCreatedOnly": 100
+      },
+      "validation": {
+        "excessiveRoles": ["admin-role", "lambda-full-role"]
+      }
+    },
+    {
+      "id": 5,
+      "title": "Incidente de seguridad",
+      "service": "Auditoría",
+      "icon": "💀",
+      "concepts": ["Auditoría", "Remediación", "Buenas prácticas"],
+      "analogy": null,
+      "description": "¡Alerta! Algo salió mal. Revisa tus decisiones anteriores y arregla los problemas de seguridad.",
+      "alert": "Se detectó actividad sospechosa. Escanea tu infraestructura, identifica los problemas y elige la remediación correcta.",
+      "steps": [
+        {
+          "action": "scanIssues",
+          "title": "Escanea tu infraestructura",
+          "description": "Ejecuta un escaneo de seguridad para identificar vulnerabilidades en tus recursos."
+        },
+        {
+          "action": "remediate",
+          "title": "Remedia las vulnerabilidades"
+        }
+      ],
+      "issues": [
+        {
+          "id": "admin-policy",
+          "title": "Usuario IAM con permisos excesivos",
+          "description": "Un usuario tiene acceso administrativo completo. Si estas credenciales se filtran, un atacante controla toda tu cuenta.",
+          "severity": "critical",
+          "triggeredBy": "mission1.excessivePolicy",
+          "remediation": {
+            "question": "¿Cómo remedias un usuario con permisos excesivos?",
+            "options": [
+              { "id": "correct", "label": "Quitar la política actual y asignar solo los permisos mínimos necesarios", "correct": true },
+              { "id": "wrong", "label": "Crear un segundo usuario con los mismos permisos como backup", "correct": false }
+            ]
+          }
+        },
+        {
+          "id": "public-bucket",
+          "title": "Bucket S3 accesible desde internet",
+          "description": "Cualquier persona puede descargar los archivos de tu bucket sin autenticación.",
+          "severity": "high",
+          "triggeredBy": "mission2.publicAccess",
+          "remediation": {
+            "question": "¿Cómo proteges un bucket que no debería ser público?",
+            "options": [
+              { "id": "wrong", "label": "Cambiar el nombre del bucket para que nadie lo encuentre", "correct": false },
+              { "id": "correct", "label": "Aplicar una política de bucket que deniegue acceso público", "correct": true }
+            ]
+          }
+        },
+        {
+          "id": "open-ports",
+          "title": "Security Group con todos los puertos abiertos",
+          "description": "Tu servidor acepta conexiones en los 65,535 puertos. Cualquier servicio vulnerable queda expuesto a internet.",
+          "severity": "critical",
+          "triggeredBy": "mission3.openAllPorts",
+          "remediation": {
+            "question": "¿Cómo arreglas un Security Group con todos los puertos abiertos?",
+            "options": [
+              { "id": "correct", "label": "Revocar la regla abierta y crear reglas solo para los puertos que necesitas (SSH, HTTP)", "correct": true },
+              { "id": "wrong", "label": "Crear un segundo Security Group y dejar ambos activos", "correct": false }
+            ]
+          }
+        },
+        {
+          "id": "lambda-excessive-role",
+          "title": "Función Lambda con rol excesivo",
+          "description": "Tu función tiene acceso a servicios que no necesita. Si alguien inyecta código malicioso, puede acceder a toda tu cuenta.",
+          "severity": "high",
+          "triggeredBy": "mission4.excessiveRole",
+          "remediation": {
+            "question": "¿Cómo corriges una función Lambda con permisos excesivos?",
+            "options": [
+              { "id": "wrong", "label": "Desactivar la función temporalmente hasta revisar los permisos después", "correct": false },
+              { "id": "correct", "label": "Cambiar el rol a uno con solo los permisos mínimos que la función necesita", "correct": true }
+            ]
+          }
+        }
+      ],
+      "scoring": {
+        "correctAnswer": 40,
+        "incorrectPenalty": -20
+      }
+    },
+    {
+      "id": 6,
+      "title": "Limpieza",
+      "service": "Cleanup",
+      "icon": "🧹",
+      "concepts": ["Costos", "Recursos huérfanos", "Buenas prácticas"],
+      "analogy": "Dejar recursos corriendo en AWS es como dejar la luz encendida al salir. Al final del mes, la cuenta llega.",
+      "description": "Elimina todos los recursos que creaste. En la nube, lo que no se apaga, se cobra.",
+      "costInfo": "En AWS real, cada recurso activo genera costos. Una instancia EC2 t2.micro cuesta ~$8.50/mes. Un bucket con datos almacena costos por GB. Limpiar lo que no usas es una práctica esencial.",
+      "steps": [
+        {
+          "action": "listResources",
+          "title": "Identifica tus recursos activos",
+          "description": "Primero, veamos qué recursos creaste durante el workshop."
+        },
+        {
+          "action": "deleteResource",
+          "title": "Elimina los recursos"
+        }
+      ],
+      "scoring": {
+        "perfectCleanup": 150,
+        "oneRemaining": 100,
+        "multipleRemaining": 50
+      }
+    }
+  ],
+  "timeBonus": {
+    "top25": 50,
+    "top50": 25,
+    "rest": 0
+  },
+  "badges": [
+    { "id": "security-master", "name": "Security Master", "icon": "🛡️", "condition": "No generó ningún issue de seguridad en misiones 1-4" },
+    { "id": "quick-learner", "name": "Quick Learner", "icon": "📚", "condition": "Generó issues pero los remedió todos correctamente" },
+    { "id": "perfect-run", "name": "Perfect Run", "icon": "⭐", "condition": "Completó todas las misiones sin reintentos" },
+    { "id": "clean-freak", "name": "Clean Freak", "icon": "🧹", "condition": "Completó la misión 6" },
+    { "id": "speed-demon", "name": "Speed Demon", "icon": "⚡", "condition": "Top 3 en tiempo total" }
+  ]
+}
